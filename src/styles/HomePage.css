@@ -1,0 +1,26 @@
+.rs-content {
+    background-color: #1a1d24;
+}
+
+.rs-form {
+    display: block;
+    width: 300px;
+    color: #a6e9ff;
+    font-size: 14px;
+    text-decoration: none;
+    padding: 10px 0 20px;
+    margin-bottom: 10px;
+}
+
+.rs-form a {
+    padding: 18px 0;
+    border-top: 1px solid #dadde1;
+    color: white;
+
+}
+
+.rs-footer {
+    padding: 20px;
+    text-align: center;
+    background-color: #59AFFF;
+}

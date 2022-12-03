@@ -27,6 +27,8 @@ import reportWebVitals from 'reportWebVitals';
 // Initialize languages
 import './locales/i18n';
 
+import { CustomProvider } from 'rsuite';
+
 const store = configureAppStore();
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
@@ -36,7 +38,9 @@ root.render(
   <Provider store={store}>
     <HelmetProvider>
       <React.StrictMode>
-        <App />
+        <CustomProvider theme="dark">
+          <App />
+        </CustomProvider>
       </React.StrictMode>
     </HelmetProvider>
   </Provider>,

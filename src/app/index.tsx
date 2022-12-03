@@ -15,6 +15,8 @@ import { GlobalStyle } from 'styles/global-styles';
 import { HomePage } from './pages/HomePage/Loadable';
 import { NotFoundPage } from './components/NotFoundPage/Loadable';
 import { useTranslation } from 'react-i18next';
+import { Cloud } from './components/Cloud';
+import { Login } from './components/Login';
 
 export function App() {
   const { i18n } = useTranslation();
@@ -29,6 +31,8 @@ export function App() {
       </Helmet>
 
       <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/cloud" element={<Cloud />} />
         <Route path="/" element={<HomePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
