@@ -8,7 +8,7 @@ import styled from 'styled-components/macro';
 import { useTranslation } from 'react-i18next';
 import { messages } from './messages';
 
-import { Table, Button, Container, Content, Footer, Col } from 'rsuite';
+import { Table, Button, Container, Content, Footer, Col, Stack } from 'rsuite';
 import { mockUsers } from './mock';
 import { Helmet } from 'react-helmet-async';
 import { Header1 } from '../Header';
