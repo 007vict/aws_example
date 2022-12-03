@@ -1,4 +1,7 @@
 import { createGlobalStyle } from 'styled-components';
+import './HomePage.css';
+import 'rsuite/styles/index.less';
+import 'rsuite/dist/rsuite.min.css'; // or 'rsuite/dist/rsuite.min.css'
 
 export const GlobalStyle = createGlobalStyle`
   html,
