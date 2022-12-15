@@ -16,7 +16,7 @@ import { Provider } from 'react-redux';
 import 'sanitize.css/sanitize.css';
 
 // Import root app
-import { App } from 'app';
+import App from 'app';
 
 import { HelmetProvider } from 'react-helmet-async';
 
@@ -28,6 +28,11 @@ import reportWebVitals from 'reportWebVitals';
 import './locales/i18n';
 
 import { CustomProvider } from 'rsuite';
+
+import awsExports from './aws-exports';
+import { Amplify } from 'aws-amplify';
+
+Amplify.configure(awsExports);
 
 const store = configureAppStore();
 const root = ReactDOM.createRoot(

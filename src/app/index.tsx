@@ -12,13 +12,17 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { GlobalStyle } from 'styles/global-styles';
 
-import { HomePage } from './pages/HomePage/Loadable';
+import HomePage from './pages/HomePage';
 import { NotFoundPage } from './components/NotFoundPage/Loadable';
 import { useTranslation } from 'react-i18next';
-import { Cloud } from './components/Cloud';
-import { Login } from './components/Login';
 
-export function App() {
+import { Cloud } from './components/Cloud';
+
+import '@aws-amplify/ui-react/styles.css';
+
+import { withAuthenticator } from '@aws-amplify/ui-react';
+
+function App() {
   const { i18n } = useTranslation();
   return (
     <BrowserRouter>
@@ -31,12 +35,12 @@ export function App() {
       </Helmet>
 
       <Routes>
-        <Route path="/login" element={<Login />} />
         <Route path="/cloud" element={<Cloud />} />
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<HomePage signOut user />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <GlobalStyle />
     </BrowserRouter>
   );
 }
+export default App;
