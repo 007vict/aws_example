@@ -14,6 +14,9 @@
     "categories": {
       "auth": {
         "vctrlnewsfbe1eef1": {}
+      },
+      "api": {
+        "vctrlnews": {}
       }
     }
   }

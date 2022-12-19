@@ -42,11 +42,9 @@ const root = ReactDOM.createRoot(
 root.render(
   <Provider store={store}>
     <HelmetProvider>
-      <React.StrictMode>
         <CustomProvider theme="dark">
           <App />
         </CustomProvider>
-      </React.StrictMode>
     </HelmetProvider>
   </Provider>,
 );

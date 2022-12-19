@@ -6,6 +6,7 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import { useTranslation } from 'react-i18next';
+import { Link } from "react-router-dom"
 import { messages } from './messages';
 import { Nav, Navbar, Header } from 'rsuite';
 
@@ -30,10 +31,10 @@ export function Header1() {
           <Nav pullRight>
             <Nav.Menu icon={<HomeIcon />} title="Home">
               <Nav.Item icon={<HomeIcon />}>
-                <a href="/">Home</a>
+                <Link to="/">Home</Link>
               </Nav.Item>
               <Nav.Item icon={<Others />}>
-                <a href="/cloud">Cloud</a>
+                <Link to="/cloud">Cloud</Link>
               </Nav.Item>
             </Nav.Menu>
           </Nav>
