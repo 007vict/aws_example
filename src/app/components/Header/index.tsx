@@ -24,9 +24,9 @@ export function Header1() {
       <Header>
         <Navbar appearance={'inverse'}>
           <Navbar.Brand>
-            <a style={{ color: '#fff' }} href="/">
+            <Link style={{ color: '#fff' }} to="/">
               Brand
-            </a>
+            </Link>
           </Navbar.Brand>
           <Nav pullRight>
             <Nav.Menu icon={<HomeIcon />} title="Home">
