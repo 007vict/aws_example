@@ -16,6 +16,7 @@ import {useEffect, useState } from 'react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { listFiles } from 'graphql/queries';
 import {deleteFile, updateFile } from 'graphql/mutations';
+import { onCreateFile, onUpdateFile, onDeleteFile } from 'graphql/subscriptions';
 
 interface Props {}
 
@@ -32,7 +33,7 @@ const EditableCell = ({ rowData, dataKey, onChange, ...props }) => {
           className="rs-input"
           defaultValue={rowData[dataKey]}
           onChange={event => {
-            onChange && onChange(rowData.id, dataKey, event.target.value);
+              onChange && onChange(rowData.id, dataKey, event.target.value);
           }}
         />
       ) : (
@@ -48,7 +49,7 @@ const ActionCell = ({ rowData, dataKey, onClick, ...props }) => {
       <Button
         appearance="link"
         onClick={() => {
-          onClick(rowData.id);
+          onClick(rowData.id, rowData.status === 'EDIT');
         }}
       >
         {rowData.status === 'EDIT' ? 'Save' : 'Edit'}
@@ -78,53 +79,119 @@ export function TableDash() {
 
   useEffect(() => {
     fetchFiles();
+
+    subOnCreate();
+    // subOnUpdate();
+    subOnDelete();
   }, []);
 
   const fetchFiles = async () => {
+    console.log('attempt reloading list files');
     try {
       const fileData = await API.graphql(graphqlOperation(listFiles));
       // @ts-ignore
       const fileList = fileData.data.listFiles.items;
-      setFiles(fileList);
+      setFiles(fileList)
     } catch (error) {
       console.log('error on fetching files', error);
     }
   };
 
-  const handleChange = async (id, key, value) => {
-    const nextFile = Object.assign([], files)
-    // @ts-ignore
-    const modeFile = nextFile.find(file => file.id === id)[key] = value
-    // @ts-ignore
-    await API.graphql(graphqlOperation(updateFile, {
-      input: {
-        id: id,
-        [key]: value
-      }
-    }))
-    setFiles(nextFile)
-    return fetchFiles;
+  const subOnCreate = async () => {
+    try {
+      const sub = await API.graphql({
+        query: onCreateFile,
+        // @ts-ignore
+      }).subscribe({
+        next: ({ value }) => {
+          console.log('need put file', value)
+          setFiles((files) => [value.data.onCreateFile, ...files?.filter(el => el?.id !== value.data.onCreateFile?.id)])
+        }
+      })
+      return () => sub.unsubscribe()
+    } catch (error) {
+      console.error('error on subscription create', error);
+    }
   };
 
-  const handleEditState = async id => {
+  const subOnUpdate = async (files) => {
+    let files1 = files
+    try {
+      const sub = await API.graphql({
+        query: onUpdateFile,
+        // @ts-ignore
+      }).subscribe({
+        next: ({ value }) => {
+          const updatedItem = value.data.onUpdateFile;
+          console.log("files in subOnUpdate" ,files1)
+          const updatedFiles = files1.map(file => file.id === updatedItem?.id ? { ...file,
+            title: updatedItem.title,
+            description: updatedItem.description
+          } : file);
+          setFiles(updatedFiles);
+          console.log('updatedFiles', updatedFiles)
+        }
+      })
+      return () => sub.unsubscribe()
+    } catch (error) {
+      console.error('error on subscription update', error);
+    }
+  };
+  const subOnDelete = async () => {
+    try {
+      const sub = await API.graphql({
+        query: onDeleteFile,
+        // @ts-ignore
+      }).subscribe({
+        next: ({ value }) => {
+          console.log('need delete file', value)
+          setFiles((files) => files?.filter(el => el?.id !== value?.data?.onDeleteFile?.id))
+        }
+      })
+      return () => sub.unsubscribe()
+    } catch (error) {
+      console.error('error on subscription create', error);
+    }
+  };
+
+  const handleChange = async (id, key, value) => {
+    const nextFiles = Object.assign([], files)
+    console.log("nextFiles", nextFiles)
+    // @ts-ignore
+    nextFiles.find(file => file.id === id)[key] = value
+    subOnUpdate(nextFiles)
+    setFiles(nextFiles)
+  };
+
+  const handleEditState = async (id, isSave) => {
     const nextData = Object.assign([], files);
     // @ts-ignore
     const activeItem = nextData.find(item => item.id === id);
-    console.log("activeItem", activeItem)
     // @ts-ignore
     activeItem.status = activeItem.status ? null : 'EDIT';
+    console.log("activeItem" , activeItem)
     setFiles(nextData);
+    if (isSave) {
+      await API.graphql(graphqlOperation(updateFile, {
+        input: {
+          // @ts-ignore
+          id: activeItem?.id,
+          // @ts-ignore
+          title: activeItem?.title,
+          // @ts-ignore
+          description: activeItem?.description
+        }
+      }))
+    }
   };
 
   const handleDeleteState = async (id) => {
-    const files2 = Object.assign([], files);
     // @ts-ignore
     await API.graphql(graphqlOperation(deleteFile, {
       input: {
         id: id,
       }
     }))
-    return fetchFiles()
   };
 
 
@@ -140,9 +207,9 @@ export function TableDash() {
             bordered={true}
             cellBordered={true}
             data={files}
-            onRowClick={rowData => {
-              console.log(rowData);
-            }}
+            // onRowClick={rowData => {
+            //   console.log(rowData);
+            // }}
           >
             <Column width={70} align='center'>
               <HeaderCell>Id</HeaderCell>
@@ -150,26 +217,26 @@ export function TableDash() {
             </Column>
             <Column flexGrow={1} align='center'>
               <HeaderCell>Title</HeaderCell>
-              <EditableCell dataKey='title' onChange={handleChange} rowData={files['title']}/>
+              <EditableCell dataKey='title' onChange={handleChange} rowData={files}/>
             </Column>
             <Column flexGrow={2}
                     align='center'
                     fullText={true}
             >
               <HeaderCell>Description</HeaderCell>
-              <EditableCell dataKey='description' onChange={handleChange} rowData={files['description']}/>
+              <EditableCell dataKey='description' onChange={handleChange} rowData={files}/>
             </Column>
             <Column flexGrow={1}
                     align='center'
             >
               <HeaderCell>Edit</HeaderCell>
-              <ActionCell dataKey="id" onClick={handleEditState} rowData={files['id']}/>
+              <ActionCell dataKey="id" onClick={handleEditState} rowData={files}/>
             </Column>
             <Column flexGrow={1}
                     align='center'
             >
               <HeaderCell>Delete</HeaderCell>
-              <DeleteCell dataKey="id" onClick={handleDeleteState} rowData={files['id']}/>
+              <DeleteCell dataKey="id" onClick={handleDeleteState} rowData={files}/>
             </Column>
           </Table>
           <AddFileForm />

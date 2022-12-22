@@ -4,9 +4,11 @@
  *
  */
 import * as React from 'react';
+/* styled-component */
 import styled from 'styled-components/macro';
-
+/* rsuite */
 import { Form, Button, Input, Modal } from 'rsuite';
+/* amplify */
 import {API, graphqlOperation } from 'aws-amplify';
 import { createFile } from 'graphql/mutations';
 
@@ -15,18 +17,24 @@ interface Props {}
 export function AddFileForm() {
 
   const [open, setOpen] = React.useState<boolean>(false);
-  const [formValue, setFormValue] = React.useState<any>({
+  let [formValue, setFormValue] = React.useState<any>({
     id: '',
     title: '',
-    description: ''
+    description: '',
   });
 
-  const handleClose = async () => {
-
-    try {
-      await API.graphql(graphqlOperation(createFile, { input: formValue }))
-    } catch (error) {
-      console.log('error add file', error)
+  const handleClose = async (isCreate) => {
+    if (isCreate) {
+      try {
+        await API.graphql(graphqlOperation(createFile, { input: formValue }))
+        setFormValue({
+          id: '',
+          title: '',
+          description: '',
+        })
+      } catch (error) {
+        console.log('error add file', error)
+      }
     }
     setOpen(false);
   };
@@ -36,7 +44,7 @@ export function AddFileForm() {
 
   return <Div>
     <>
-      <Modal open={open} onClose={handleClose} size="xs">
+      <Modal open={open} onClose={() => handleClose(false)} size="xs">
         <Modal.Header>
           <Modal.Title>New File</Modal.Title>
         </Modal.Header>
@@ -60,10 +68,10 @@ export function AddFileForm() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={handleClose} type="submit" appearance="primary">
+          <Button onClick={() => handleClose(true)} type="submit" appearance="primary">
             Confirm
           </Button>
-          <Button onClick={handleClose} appearance="subtle">
+          <Button onClick={() => handleClose(false)} appearance="subtle">
             Cancel
           </Button>
         </Modal.Footer>
