@@ -6,4 +6,5 @@ type File @model @auth(rules: [{ allow: owner }]) {
   id: ID!
   title: String!
   description: String!
+  image: String
 }

@@ -10,13 +10,17 @@ import TrashIcon from '@rsuite/icons/Trash';
 import { AddFileForm } from 'app/components/AddFileForm';
 import SpinnerIcon from '@rsuite/icons/legacy/Spinner';
 
-import {Button, Table, Loader, Grid, Row, Col, FlexboxGrid } from 'rsuite';
-import {useEffect, useState } from 'react';
+import { Button, Table, Loader, Grid, Row, Col, FlexboxGrid } from 'rsuite';
+import { useEffect, useState } from 'react';
 
-import { API, graphqlOperation } from 'aws-amplify';
+import { API, graphqlOperation, Storage } from 'aws-amplify';
 import { listFiles } from 'graphql/queries';
-import {deleteFile, updateFile } from 'graphql/mutations';
+import { deleteFile, updateFile } from 'graphql/mutations';
 import { onCreateFile, onUpdateFile, onDeleteFile } from 'graphql/subscriptions';
+
+import {
+  Image,
+} from '@aws-amplify/ui-react';
 
 interface Props {}
 
@@ -33,6 +37,7 @@ const EditableCell = ({ rowData, dataKey, onChange, ...props }) => {
           className="rs-input"
           defaultValue={rowData[dataKey]}
           onChange={event => {
+              event.preventDefault();
               onChange && onChange(rowData.id, dataKey, event.target.value);
           }}
         />
@@ -64,7 +69,7 @@ const DeleteCell = ({ rowData, dataKey, onClick, ...props }) => {
       <Button
         appearance="link"
         onClick={() => {
-          onClick(rowData.id);
+          onClick(rowData.id, rowData.title);
         }}
       >
         <DelIcon size = "1em"/>
@@ -91,9 +96,18 @@ export function TableDash() {
       const fileData = await API.graphql(graphqlOperation(listFiles));
       // @ts-ignore
       const fileList = fileData.data.listFiles.items;
+      await Promise.all(
+        fileList.map(async (file) => {
+          if (file.image) {
+            const url = await Storage.get(file.title)
+            file.image = url;
+          }
+          return file;
+        })
+      );
       setFiles(fileList)
     } catch (error) {
-      console.log('error on fetching files', error);
+      console.warn('error on fetching files', error);
     }
   };
 
@@ -185,7 +199,8 @@ export function TableDash() {
     }
   };
 
-  const handleDeleteState = async (id) => {
+  const handleDeleteState = async (id, title) => {
+    await Storage.remove(title)
     // @ts-ignore
     await API.graphql(graphqlOperation(deleteFile, {
       input: {
@@ -207,18 +222,20 @@ export function TableDash() {
             bordered={true}
             cellBordered={true}
             data={files}
-            // onRowClick={rowData => {
-            //   console.log(rowData);
-            // }}
+            onRowClick={rowData => {
+              console.log(rowData);
+            }}
           >
             <Column width={70} align='center'>
               <HeaderCell>Id</HeaderCell>
               <Cell dataKey='id' />
             </Column>
+
             <Column flexGrow={1} align='center'>
               <HeaderCell>Title</HeaderCell>
               <EditableCell dataKey='title' onChange={handleChange} rowData={files}/>
             </Column>
+
             <Column flexGrow={2}
                     align='center'
                     fullText={true}
@@ -226,18 +243,26 @@ export function TableDash() {
               <HeaderCell>Description</HeaderCell>
               <EditableCell dataKey='description' onChange={handleChange} rowData={files}/>
             </Column>
+
+            <Column flexGrow={1} align='center'>
+              <HeaderCell>Upload</HeaderCell>
+              <EditableCell dataKey='image' rowData={files} onChange=''/>
+            </Column>
+
             <Column flexGrow={1}
                     align='center'
             >
               <HeaderCell>Edit</HeaderCell>
               <ActionCell dataKey="id" onClick={handleEditState} rowData={files}/>
             </Column>
+
             <Column flexGrow={1}
                     align='center'
             >
               <HeaderCell>Delete</HeaderCell>
               <DeleteCell dataKey="id" onClick={handleDeleteState} rowData={files}/>
             </Column>
+
           </Table>
           <AddFileForm />
         </Flex>
@@ -253,7 +278,7 @@ export function TableDash() {
                 }}
               >
                 <Row style={{padding: 10}}>
-                  <Loader size="lg" content="Empy data db!" />
+                  <Loader size="lg" content="Empty data of db!" />
                 </Row>
                 <Row style={{padding: 10}}>
                   <AddFileForm />

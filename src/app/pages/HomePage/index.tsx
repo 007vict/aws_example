@@ -27,9 +27,9 @@ function HomePage({ signOut, user }) {
         <Content>
           <FormCol>
             <>
-            <div>Dashboard</div>
-            <h1>Hello {user.attributes.email}!</h1>
+            <h3>Hello {user.attributes.email}!</h3>
             <Button onClick={signOut}>Sign out</Button>
+              <h1>Dashboard</h1>
               <TableDash />
             </>
           </FormCol>
@@ -46,7 +46,7 @@ export default withAuthenticator(HomePage, {
 });
 
 const FormCol = styled.section`
-  height: 85vh;
+  min-height: 85vh;
   display: flex;
   flex-direction: column;
   justify-content: center;

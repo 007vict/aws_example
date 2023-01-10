@@ -10,6 +10,7 @@ export const onCreateFile = /* GraphQL */ `
       id
       title
       description
+      image
       createdAt
       updatedAt
       owner
@@ -25,6 +26,7 @@ export const onUpdateFile = /* GraphQL */ `
       id
       title
       description
+      image
       createdAt
       updatedAt
       owner
@@ -40,6 +42,7 @@ export const onDeleteFile = /* GraphQL */ `
       id
       title
       description
+      image
       createdAt
       updatedAt
       owner
